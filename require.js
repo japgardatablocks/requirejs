@@ -665,14 +665,11 @@ var requirejs, require, define;
                 if (!mod.error) {
                     //If the module should be executed, and it has not
                     //been inited and time is up, remember it.
-                    if (!mod.inited && expired) {
-                        if (hasPathFallback(modId)) {
-                            usingPathFallback = true;
-                            stillLoading = true;
-                        } else {
-                            noLoads.push(modId);
-                            removeScript(modId);
-                        }
+                    if (!mod.inited && expired && hasPathFallback(modId)) {
+                        
+                        usingPathFallback = true;
+                        stillLoading = true;
+                        
                     } else if (!mod.inited && mod.fetched && map.isDefine) {
                         stillLoading = true;
                         if (!map.prefix) {

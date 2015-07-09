@@ -665,11 +665,14 @@ var requirejs, require, define;
                 if (!mod.error) {
                     //If the module should be executed, and it has not
                     //been inited and time is up, remember it.
-                    if (!mod.inited && expired && hasPathFallback(modId)) {
-                        
-                        usingPathFallback = true;
-                        stillLoading = true;
-                        
+                    if (!(mod.inited || mod.loaded)  && expired) {
+                        if (hasPathFallback(modId)) {
+                            usingPathFallback = true;
+                            stillLoading = true;
+                        } else {
+                            noLoads.push(modId);
+                            removeScript(modId);
+                        }
                     } else if (!mod.inited && mod.fetched && map.isDefine) {
                         stillLoading = true;
                         if (!map.prefix) {
@@ -1553,6 +1556,9 @@ var requirejs, require, define;
                 //of those calls/init calls changes the registry.
                 mod = getOwn(registry, moduleName);
 
+                if (mod) mod.loaded = true;
+               
+
                 if (!found && !hasProp(defined, moduleName) && mod && !mod.inited) {
                     if (config.enforceDefine && (!shExports || !getGlobal(shExports))) {
                         if (hasPathFallback(moduleName)) {
@@ -1682,7 +1688,8 @@ var requirejs, require, define;
              */
             onScriptError: function (evt) {
                 var data = getScriptData(evt);
-                if (!hasPathFallback(data.id)) {
+                //would be better to actually check if mod is "inited" but for some reason "getModule" returns a Module which does not show "inited"
+                if (!hasPathFallback(data.id) && !(data.id in defined)) {
                     return onError(makeError('scripterror', 'Script error for: ' + data.id, evt, [data.id]));
                 }
             }
